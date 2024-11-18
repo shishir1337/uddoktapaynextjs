@@ -9,6 +9,10 @@ export async function POST(req: Request) {
     const exchangeRate = await getGbpToBdtRate()
     const bdtAmount = convertGbpToBdt(amount, exchangeRate)
 
+    // Ensure the redirect URL includes the port number
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://59ca-103-72-212-116.ngrok-free.app'
+    const redirectUrl = new URL('/payment/success', appUrl).toString()
+
     const response = await axios.post(
       `${process.env.UDDOKTAPAY_BASE_URL}/api/checkout-v2`,
       {
@@ -21,9 +25,10 @@ export async function POST(req: Request) {
           exchange_rate: exchangeRate,
           address: address,
         },
-        redirect_url: `${process.env.NEXT_PUBLIC_APP_URL}/payment/success`,
-        cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/payment/cancel`,
-        webhook_url: `${process.env.NEXT_PUBLIC_APP_URL}/api/payment-webhook`,
+        redirect_url: redirectUrl,
+        cancel_url: `${appUrl}/payment/cancel`,
+        webhook_url: `${appUrl}/api/payment-webhook`,
+        return_type: "GET",
       },
       {
         headers: {
